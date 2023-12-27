@@ -6,7 +6,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from datetime import datetime
 from crypto import decrypt, encrypt
 from captcha_resolver import solve_captcha
-from config import CRYPTED_EVENTID, TICKET_COUNT, ENABLE_TICKET_AREA
+from config import CRYPTED_EVENTID, SCHEDULE_TIME, TICKET_COUNT, ENABLE_TICKET_AREA
 
 
 req = requests.Session()
@@ -199,13 +199,8 @@ if __name__ == "__main__":
         ticket_area_name = [i["ticketAreaName"]
                             for i in get_ticket_area_info(products)["result"]["ticketArea"]]
 
-    start_reserve(products)
+    # start_reserve(products)
 
-    # 建立一個阻塞式調度器
     scheduler = BlockingScheduler()
-
-    # 設定任務在 2023/12/26 的 21:15 執行
-    scheduler.add_job(start_reserve, 'date', run_date=datetime(2023, 12, 26, 20, 34, 0), args=(products,))
-
-    # 啟動調度器
+    scheduler.add_job(start_reserve, 'date', run_date=SCHEDULE_TIME, args=(products,))
     scheduler.start()
