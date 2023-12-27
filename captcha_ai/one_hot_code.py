@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import numpy as np
-import config
+from . import config
 
 class LengthError(Exception):
     def __init__(self, message: str) -> None:

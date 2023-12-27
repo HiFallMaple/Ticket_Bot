@@ -1,17 +1,11 @@
-import cv2
-import csv
-import numpy as np
-import logging
-from tqdm import tqdm
-import config
 # pytorch
-import os
 import torch
 from torch import nn
-from torch.utils.data import DataLoader
-from cnn_dataset import CAPTCHADataset
-from cnn_model import CNN
 from torch.autograd import Variable
+from torch.utils.data import DataLoader
+from . import config
+from .cnn_dataset import CAPTCHADataset
+from .cnn_model import CNN
 
 # import random_files
 
@@ -22,13 +16,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f'Using {device} device')
 
 cnn = CNN().to(device)
-# cnn.load_state_dict(torch.load(config.TRAIN_RESULT_PATH))
+cnn.load_state_dict(torch.load(config.TRAIN_RESULT_PATH))
 
 train_dataset = CAPTCHADataset(config.TRAIN_CSV, config.CAPTCHA_DIR)
-train_dataloader = DataLoader(train_dataset, batch_size=300)
+train_dataloader = DataLoader(train_dataset, batch_size=config.BATCH_SIZE)
 
-test_dataset = CAPTCHADataset(config.TEST_CSV, config.CAPTCHA_DIR)
-test_dataloader = DataLoader(test_dataset, batch_size=300)
+validation_dataset = CAPTCHADataset(config.TEST_CSV, config.CAPTCHA_DIR)
+validation_dataloader = DataLoader(validation_dataset, batch_size=config.BATCH_SIZE)
 
 criterion = nn.MultiLabelSoftMarginLoss()
 optimizer = torch.optim.Adam(cnn.parameters(), lr=config.LEARNING_RATE)

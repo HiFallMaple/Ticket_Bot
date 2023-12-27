@@ -2,14 +2,14 @@ import threading
 import time
 import requests
 import json
-from crypto import decrypt, encrypt
 from apscheduler.schedulers.blocking import BlockingScheduler
 from datetime import datetime
+from crypto import decrypt, encrypt
+from captcha_resolver import solve_captcha
+from config import CRYPTED_EVENTID, TICKET_COUNT, ENABLE_TICKET_AREA
+
 
 req = requests.Session()
-CRYPTED_EVENTID = "a14592d00342f78bac61c0c378d1cbe2"
-COUNT = 1
-ENABLE_TICKET_AREA = False
 
 headers = {
     'authority': 'apis.ticketplus.com.tw',
@@ -83,7 +83,7 @@ def print_ticket_area_info(products: dict):
             print()
 
 
-def reserve_ticket(productId: str, captcha_key: str, captcha: str, ticket_area_name: str = None):
+def reserve_ticket(event: threading.Event, productId: str, captcha_key: str, captcha: str, ticket_area_name: str = None):
     params = {
         '_': get_timestamp(),
     }
@@ -91,7 +91,7 @@ def reserve_ticket(productId: str, captcha_key: str, captcha: str, ticket_area_n
         'products': [
             {
                 'productId': productId,
-                'count': COUNT,
+                'count': TICKET_COUNT,
             },
         ],
         'captcha': {
@@ -102,7 +102,7 @@ def reserve_ticket(productId: str, captcha_key: str, captcha: str, ticket_area_n
         "finalizedSeats": True,
         "reserveSeats": True
     }
-    while True:
+    while not event.is_set():
         time.sleep(1)
         response = req.post('https://apis.ticketplus.com.tw/ticket/api/v1/reserve',
                             params=params, headers=headers, json=json_data)
@@ -111,6 +111,7 @@ def reserve_ticket(productId: str, captcha_key: str, captcha: str, ticket_area_n
             print(f"{ticket_area_name}: ", end="")
         print(f"{data}")
         if data["errCode"] == "00" or data["errCode"] == "111":
+            event.set()
             return
 
 
@@ -118,13 +119,15 @@ def start_reserve(products: dict):
     product = products["products"][0]
     crypted_sessionId = product["sessionId"]
     
-    captcha_key = get_captcha(crypted_sessionId)
-    captcha = input("Please input captcha: ")
-
+    captcha_key, captcha_svg = get_captcha(crypted_sessionId)
+    captcha = solve_captcha(captcha_svg)
+    print(captcha)
+    event = threading.Event()
+    
     threads = []
     for i in range(len(products["products"])):
         thread = threading.Thread(target=reserve_ticket, args=(
-            products["products"][i]["productId"], captcha_key, captcha, ticket_area_name[i] if ENABLE_TICKET_AREA else None,))
+           event, products["products"][i]["productId"], captcha_key, captcha, ticket_area_name[i] if ENABLE_TICKET_AREA else None,))
         threads.append(thread)
         thread.start()
 
@@ -146,12 +149,9 @@ def get_captcha(crypted_sessionId: str, refresh: bool = False):
                         params=params, headers=headers, json=json_data)
     data = json.loads(response.text)
     captcha_key = data["key"]
-    with open('output.svg', 'w') as f:
-        f.write(str(data['data']))
-    return captcha_key
+    return captcha_key, str(data['data'])
 
 def login():
-    """ return headers """
     params = {
         '_': get_timestamp(),
     }

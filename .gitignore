@@ -1,6 +1,7 @@
 test.py
-output.svg
-output.png
+*.svg
+*.png
 account.json
 __pycache__
 venv
+captcha_substring/

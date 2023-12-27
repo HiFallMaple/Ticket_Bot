@@ -1,9 +1,10 @@
 from torch.utils.data import Dataset
 import csv
 import cv2
-import one_hot_code
-import config
-import utils
+from . import one_hot_code
+from . import config
+from . import utils
+
 
 class CAPTCHADataset(Dataset):
     """Face Landmarks dataset."""
@@ -11,12 +12,12 @@ class CAPTCHADataset(Dataset):
     def __init__(self, csv_name, img_dir):
         self.img_name_list = self.__load_csv(csv_name)
         self.img_dir = img_dir
-        
+
     def __getitem__(self, index):
         filename = self.img_name_list[index]
         img = cv2.imread(utils.get_img_path(filename))
         img = config.transform(img)
-        label = one_hot_code.encode(filename[:6])
+        label = one_hot_code.encode(utils.get_img_label(filename))
         return (img, label)
 
     def __len__(self):
@@ -29,4 +30,3 @@ class CAPTCHADataset(Dataset):
             for line in reader:
                 data_list.append(line.pop())
         return data_list
-

@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import torch.nn as nn
-import config
+from . import config
 
 # CNN Model (2 conv layer)
 class CNN(nn.Module):

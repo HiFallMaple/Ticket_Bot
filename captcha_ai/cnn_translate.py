@@ -1,8 +1,5 @@
-from cnn_model import *
+from .cnn_model import *
 import torch
-from torch.autograd import Variable
-from tqdm import tqdm
-import cv2
 import numpy as np
 
 class CAPTCHA_Translater():

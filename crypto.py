@@ -2,9 +2,6 @@ from Crypto.Util.Padding import pad
 import codecs
 from Crypto.Util.Padding import unpad
 from Crypto.Cipher import AES
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from base64 import b64encode, b64decode
 
 KEY = b'ILOVEFETIXFETIX!'
 IV = b'!@#$FETIXEVENTiv'

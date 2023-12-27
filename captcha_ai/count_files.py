@@ -1,6 +1,6 @@
 import os
 import shutil
-from config import CAPTCHA_DIR
+from .config import CAPTCHA_DIR
 
 # 計算有多少圖片檔，並刪除於錯誤位置之.jpg檔案
 

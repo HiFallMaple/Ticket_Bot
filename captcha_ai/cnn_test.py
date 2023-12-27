@@ -1,12 +1,12 @@
-from cnn_model import *
-from torch.utils.data import DataLoader
-from cnn_dataset import CAPTCHADataset
 import torch
-from one_hot_code import *
-import itertools
+from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from tqdm import tqdm
+import itertools
 
+from .cnn_model import *
+from .cnn_dataset import CAPTCHADataset
+from .one_hot_code import *
 
 
 test_dataset = CAPTCHADataset(config.TEST_CSV, config.CAPTCHA_DIR)
@@ -41,8 +41,10 @@ for i, (images, labels) in enumerate(test_dataloader):
         # else:
             # print(False)
         progress.update(1)
-    
+
     total += labels.size(0)
-    if(total%200==0):
-        print('Test Accuracy of the model on the %d test images: %f %%' % (total, 100 * correct / total))
-print('Test Accuracy of the model on the %d test images: %f %%' % (total, 100 * correct / total))
+    if (total % 200 == 0):
+        print('Test Accuracy of the model on the %d test images: %f %%' %
+              (total, 100 * correct / total))
+print('Test Accuracy of the model on the %d test images: %f %%' %
+      (total, 100 * correct / total))
