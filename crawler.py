@@ -6,7 +6,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from datetime import datetime, timedelta
 from crypto import decrypt, encrypt
 from captcha_resolver import solve_captcha
-from config import CRYPTED_EVENTID, SCHEDULE_TIME, TICKET_COUNT, ENABLE_TICKET_AREA
+from config import CRYPTED_EVENTID, SCHEDULE_TIME, TICKET_COUNT, ENABLE_TICKET_AREA, INTERVAL
 
 
 req = requests.Session()
