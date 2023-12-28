@@ -3,7 +3,7 @@ import time
 import requests
 import json
 from apscheduler.schedulers.blocking import BlockingScheduler
-from datetime import datetime
+from datetime import datetime, timedelta
 from crypto import decrypt, encrypt
 from captcha_resolver import solve_captcha
 from config import CRYPTED_EVENTID, SCHEDULE_TIME, TICKET_COUNT, ENABLE_TICKET_AREA
@@ -51,14 +51,6 @@ def verify_token(token: str) -> bool:
     return result['errCode'] == '00'
 
 
-def get_by_sortedIndex(sortedIndex: int, list: list) -> dict:
-    print(list)
-    for i in list:
-        if i['sortedIndex'] == sortedIndex:
-            return i
-    raise Exception("sortedIndex not found")
-
-
 def get_ticket_area_info(products: dict):
     params = {
         'ticketAreaId': ','.join([i["ticketAreaId"] for i in products["products"]]),
@@ -73,7 +65,7 @@ def get_ticket_area_info(products: dict):
 
 def print_ticket_area_info(products: dict):
     data = get_ticket_area_info(products)
-    print(data)
+    # print(data)
     for i in data["result"]["ticketArea"]:
         print("ticketAreaName:", i["ticketAreaName"], end="")
         print(", price:", i["price"], end="")
@@ -103,7 +95,7 @@ def reserve_ticket(event: threading.Event, productId: str, captcha_key: str, cap
         "reserveSeats": True
     }
     while not event.is_set():
-        time.sleep(1)
+        time.sleep(INTERVAL)
         response = req.post('https://apis.ticketplus.com.tw/ticket/api/v1/reserve',
                             params=params, headers=headers, json=json_data)
         data = json.loads(response.text)
@@ -121,7 +113,7 @@ def start_reserve(products: dict):
     
     captcha_key, captcha_svg = get_captcha(crypted_sessionId)
     captcha = solve_captcha(captcha_svg)
-    print(captcha)
+    print("CAPTCHA:", captcha)
     event = threading.Event()
     
     threads = []
@@ -173,8 +165,10 @@ def get_products():
 
 
 if __name__ == "__main__":
+    scheduler = BlockingScheduler()
     # login
-    login()
+    scheduler.add_job(login, 'date', run_date=SCHEDULE_TIME-timedelta(seconds=30))
+    # login()
 
     # get events info
     response = req.get(
@@ -183,8 +177,8 @@ if __name__ == "__main__":
     )
 
     data = json.loads(response.text)
-    for i in data["sessions"]:
-        print(i)
+    # for i in data["sessions"]:
+    #     print(i)
 
 
     # get products
@@ -201,6 +195,7 @@ if __name__ == "__main__":
 
     # start_reserve(products)
 
-    scheduler = BlockingScheduler()
+    # scheduler = BlockingScheduler()
     scheduler.add_job(start_reserve, 'date', run_date=SCHEDULE_TIME, args=(products,))
+    scheduler.print_jobs()
     scheduler.start()
